@@ -1,10 +1,20 @@
-MOV AX,[1000h]
-MOV BX,[1002h]
-MOV CL,00h
-ADD AX,BX
-MOV [1004h],AX
-JNC jump
-INC CL
-jump:
-MOV [1006h],CL
-HLT
+data_new segment
+    data1 dw 13h
+    data2 dw 0D7h
+    data3 dw 1 dup<?>
+    data_new ends
+
+code segment
+    assume cs:code,ds:data_new
+    start:
+    mov ax,data_new
+    mov ds,ax
+    
+    mov ax,data1
+    mov bx,data2
+    add ax,bx
+    mov data3,ax
+    
+    code ends
+end start
+end

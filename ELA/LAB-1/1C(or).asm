@@ -12,7 +12,7 @@ code segment
     
     mov ax,data1
     mov bx,data2
-    sub ax,bx
+    or ax,bx
     mov data3,ax
     
     code ends
