@@ -19,10 +19,10 @@
       menu db  ';;;;;;;;;;;;;;;;;;;;MAIN MENU;;;;;;;;;;;;;;;;;;;;$'
       menu1 db ';; Press 1 for Two-Wheelers                    ;;$'                      
       menu2 db ';; Press 2 for Four-Wheelers                   ;;$'
-      ; menu3 db ';; Press 3 for                                 ;;$'
-      menu4 db ';; Press 3 to Show Record                      ;;$'
-      menu5 db ';; Press 4 to Delete Record                    ;;$'
-      menu6 db ';; Press 5 to Exit                             ;;$'
+      menu3 db ';; Press 3 for Space Availability              ;;$'
+      menu4 db ';; Press 4 to Show Record                      ;;$'
+      menu5 db ';; Press 5 to Delete Record                    ;;$'
+      menu6 db ';; Press 6 to Exit                             ;;$'
       menu7 db ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;$'
 
       two_menu db  ';;;;;;;;;;;;;;;;;TWO-WHEELER MENU;;;;;;;;;;;;;;;;$'
@@ -32,6 +32,13 @@
       two_menu4 db ';; Press 4 to Go Back                          ;;$'     
       two_menu5 db ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;$'   
       two_price db 'Rs. 200$'
+
+      four_menu db  ';;;;;;;;;;;;;;;;;FOUR-WHEELER MENU;;;;;;;;;;;;;;;$'
+      four_menu1 db ';; Press 1 for Pricing                         ;;$'                      
+      four_menu2 db ';; Press 2 to Check Space Availibilty          ;;$'                      
+      four_menu3 db ';; Press 3 to Purchase Parking Ticket          ;;$'                      
+      four_menu4 db ';; Press 4 to Go Back                          ;;$'     
+      four_menu5 db ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;$'   
       four_price db 'Rs. 400$'
 
       price db 'The price is: $'
@@ -46,27 +53,25 @@
       msg4 db 'bus$'
       msg5 db 'record$'
       msg6 db 'there is more space$'
-      msg7 db 'the total amount is=$'
-      msg8 db 'the total numbers of vehicles parked=$'
-      msg9 db 'the total number of rikshws parked=$'
-      msg10 db 'the total number of cars parked=$'
-      msg11 db 'the total number of buses parked=$'
-      msg12 db '***Record deleted successfully***$'
+      msg7 db 'The total amount is = $'
+      msg8 db 'The total numbers of vehicles parked = $'
+      msg9 db 'The total number of Two-Wheelers parked = $'
+      msg10 db 'The total number of Four-Wheelers parked = $'
+      msg12 db '***Record Deleted Successfully***$'
       amount dw 0
       count dw '0'
       count1 dw '0'
-      ; am1 dw ?
-      ; am2 dw ?
-      ; am3 dw ?
 
       two_avail_msg db 'The number of spaces left for Two-Wheelers are: $'
+      four_avail_msg db 'The number of spaces left for Four-Wheelers are: $'
+      total_avail_msg db 'The number of spaces left are: $'
       
       r_left dw '4'
       c_left dw '4'
       
       r dw '0'
       c db '0'
-      b db '0'
+
       
   .code
   ;****************MAIN PROGRAM****************
@@ -83,7 +88,7 @@
   ;***********************MAIN MENU****************************
   main_menu proc
       while_:   
-                  ;Menu
+
       call clr
       mov dx,10
       mov ah,2
@@ -104,12 +109,14 @@
       cmp al,'1'
       je two_wheeler
       cmp al,'2'
-      je car
+      je four_wheeler
       cmp al,'3'
-      je rec
+      je avail_total
       cmp al,'4'
-      je del
+      je rec
       cmp al,'5'
+      je del
+      cmp al,'6'
       je end_
       
       mov dx,offset wrong_choice
@@ -118,30 +125,21 @@
 
       jmp while_
       
-      car:
+      avail_total:
       call clr
-      call caar
+      call avail_main
       call back
-      
-      
+
+
       rec:
       call clr
       call recrd
       call back
       
-      
       del:
       call clr
       call delt
       call back
-      
-      
-      bus:
-      call clr
-      call buss
-      call back
-      
-      
       
       end_:
       mov ah,4ch
@@ -168,7 +166,7 @@
       cmp al,'3'
       je purchase_two_ticket
       cmp al,'4'
-      je main_menu
+      call main_menu
       cmp al,'5'
       je del
       cmp al,'6'
@@ -186,6 +184,83 @@
       call getc
 
       two_wheeler endp
+
+      ;*********Four wheeler************
+
+      four_wheeler proc 
+;       okay:
+      call clr
+
+      call put_four_menu
+      call user_choice
+
+      mov al,bl
+      cmp al,'1'
+      je show_four_price
+      cmp al,'2'
+      je show_four_avail
+      cmp al,'3'
+      je purchase_four_ticket
+      cmp al,'4'
+      call main_menu
+      cmp al,'5'
+      je del
+      cmp al,'6'
+      je end_
+
+      show_four_price:
+      call put_four_price
+
+      purchase_four_ticket:
+      call put_four_ticket
+
+      show_four_avail:
+      call put_four_avail
+
+      call getc
+
+      four_wheeler endp
+
+      ;**********avail_main***********
+      avail_main proc
+      mov dx,offset total_avail_msg
+      call puts
+
+      ;sum of cars + bikes
+      mov ax,r_left
+      mov bx,c_left
+      add ax,bx
+      mov dx,ax
+      mov ah,2
+      int 21h
+
+      call endl
+      call endl
+
+      mov dx,offset two_avail_msg
+      call puts
+
+
+      mov dx, r_left
+      mov ah,2
+      int 21h
+
+      call endl
+      call endl
+
+      mov dx,offset four_avail_msg
+      call puts
+
+
+      mov dx, c_left
+      mov ah,2
+      int 21h
+
+      call endl
+      call endl
+
+      ret
+      avail_main endp
 
 
       ;*********PUT_TWO_AVAIL***********
@@ -212,6 +287,31 @@
 
       ret
       put_two_avail endp
+
+      ;*********PUT_FOUR_AVAIL***********
+      put_four_avail proc
+      call clr
+      
+      mov dx,offset four_avail_msg
+      call puts
+
+
+      mov dx, c_left
+      mov ah,2
+      int 21h
+
+      call endl
+      call endl
+
+      mov dx,offset goback
+      call puts
+
+      call getc
+
+      call four_wheeler
+
+      ret
+      put_four_avail endp
       
       ;**********PUT_TWO_TICKET***********
       
@@ -222,8 +322,6 @@
       mov dx,offset msg1
       mov ah,9
       int 21h
-      ; jmp while_
-      ; jmp end_
 
       mov dx,offset goback
       call puts
@@ -267,6 +365,58 @@
       ret
       put_two_ticket endp
 
+      ;**********PUT_FOUR_TICKET***********
+      
+      put_four_ticket proc
+      call clr
+      cmp c,'4'
+      jl four1
+      mov dx,offset msg1
+      mov ah,9
+      int 21h
+
+      mov dx,offset goback
+      call puts
+
+      call getc
+
+      call four_wheeler
+      
+      four1:
+      mov ax,400
+      add amount, ax
+      mov dx,0 ; remainder is 0
+      mov bx,10 
+      mov cx,0
+      l4:
+              div bx
+              push dx
+              mov dx,0
+              mov ah,0
+              inc cx
+              cmp ax,0
+              jne l4
+
+        
+      l5:
+              pop dx
+              add dx,48
+              mov ah,2
+              int 21h
+      loop l5
+
+      call endl
+
+      inc count
+      inc c
+      dec c_left
+
+      call endl
+      
+      call back
+      ret
+      put_four_ticket endp
+
       ;*********PUT_TWO_PRICE************
       put_two_price proc
       call clr
@@ -291,88 +441,33 @@
 
       ret
       put_two_price endp
-      
-      
-      
-      ;**********CAR***********
-      caar proc
-      cmp count,'8'
-      jle car1
-      mov dx,offset msg1
-      mov ah,9
-      int 21h
-      jmp while_
-      jmp end_
-      
-      car1:
-      mov ax,300
-      add amount, ax
-      mov dx,0
-      mov bx,10
-      mov cx,0
-      l22:
-              div bx
-              push dx
-              mov dx,0
-              mov ah,0
-              inc cx
-              cmp ax,0
-            jne l22
-        
-      l33:
-              pop dx
-              add dx,48
-              mov ah,2
-              int 21h
-      loop l33
-      
-      inc count
-      inc c
-      ret
 
-      caar endp
-      
-      
-      
-      ;*******BUS*******
-      buss proc
-      cmp count,'8'
-      jle bus1
-      mov dx,offset msg1
-      mov ah,9
-      int 21h
-      jmp while_
-      jmp end_
-      
-      bus1:
-      mov ax,400
-      add amount, ax
-      mov dx,0
-      mov bx,10
-      mov cx,0
-      l222:
-              div bx
-              push dx
-              mov dx,0
-              mov ah,0
-              inc cx
-              cmp ax,0
-            jne l222
-        
-      l333:
-              pop dx
-              add dx,48
-              mov ah,2
-              int 21h
-      loop l333
-      
-      inc count
-      inc b
-      ret
-      
-      buss endp
+      ;*********PUT_FOUR_PRICE************
+      put_four_price proc
+      call clr
 
+      mov dx,offset price
+      call puts
+
+      mov dx,offset four_price
+      call puts
+
+      call endl
+
+    
+      mov dx,offset goback
+      call puts
+
+      call getc
+
+      ; call clr
       
+      call four_wheeler
+
+      ret
+      put_four_price endp
+
+      ;*********recrd*********
       recrd proc
       mov dx,offset msg7
       mov ah,9
@@ -408,6 +503,7 @@
       mov ah,2
       int 21h
       
+      call endl
       mov dx,offset msg8
       mov ah,9
       int 21h
@@ -423,7 +519,7 @@
       mov ah,2
       int 21h
       
-      
+      call endl
       mov dx,offset msg9
       mov ah,9
       int 21h
@@ -440,7 +536,7 @@
       int 21h
       
       
-      
+      call endl
       mov dx,offset msg10
       mov ah,9
       int 21h
@@ -457,18 +553,18 @@
       mov ah,2
       int 21h
       
+      call endl 
+      call endl
       
       
-      mov dx,offset msg11
-      mov ah,9
-      int 21h
+;       mov dx,offset msg11
+;       mov ah,9
+;       int 21h
       
-      mov dl,b
-      mov ah,2
-      int 21h
+;       mov dl,b
+;       mov ah,2
+;       int 21h
       
-      ; jmp while_
-      ; jmp end_
       ret
 
       recrd endp
@@ -479,7 +575,9 @@
       delt proc
       mov r,'0'
       mov c,'0'
-      mov b,'0'
+      mov r_left,'4'
+      mov c_left,'4'
+
       mov amount,0
       ;sub amount,48
       mov count,'0'
@@ -494,8 +592,6 @@
       mov ah,2
       int 21h
       
-      ; jmp while_
-      ; jmp end_
       ret
 
       delt endp
@@ -616,8 +712,8 @@
       mov dx,offset menu2
       call puts
       
-      ; mov dx,offset menu3
-      ; call puts
+      mov dx,offset menu3
+      call puts
       
       mov dx,offset menu4
       call puts
@@ -665,6 +761,35 @@
 
       put_two_menu endp
 
+      ;**********put_four_menu*********
+
+      put_four_menu proc
+      call clr
+      mov dx,offset four_menu
+      call puts
+
+      mov dx,offset four_menu1
+      call puts
+
+      mov dx,offset four_menu2
+      call puts
+
+      mov dx,offset four_menu3
+      call puts
+
+      mov dx,offset four_menu4
+      call puts
+
+      mov dx,offset four_menu5
+      call puts
+
+      mov dx,offset choice
+      call puts
+
+      ret
+      put_four_menu endp
+
+      ;*******endline*******
       endl proc
       mov dx,13
       mov ah,2
