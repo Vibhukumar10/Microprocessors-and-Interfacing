@@ -3,22 +3,16 @@ print macro m
 mov ah,09h
 mov dx,offset m
 int 21h
-endm
+endm   
 
 .model small
-
-
-;******  Data Segment ******
 .data
 
-empty db 10,13, "   $"
-str1 db 25,?,25 dup('$')
-str2 db 25,?,25 dup('$')
-mstring db 10,13, "Enter the string: $"
-mstring2 db 10,13, "Enter second string: $"
-mreverse db 10,13, "Reversed string: $"
-
-;********** Code Segment ************
+    empty db 10,13, "   $"
+    str1 db 25,?,25 dup('$')
+    str2 db 25,?,25 dup('$')
+    mstring db 10,13, "Enter the string: $"
+    mreverse db 10,13, "Reversed string: $"
 
 .code
 

@@ -8,14 +8,12 @@ endm
 
 .data
 
-msg db 10,13, "Exiting the program $"
-
-empty db 10,13, "   $"
-str1 db 25,?,25 dup('$')
-
-len db ?
-mstring db 10,13, "Enter the string: $"
-mlength db 10,13, "Length is: $"
+    msg db 10,13, "Exiting the program $"
+    empty db 10,13, "   $"
+    str1 db 25,?,25 dup('$') 
+    len db ?
+    mstring db 10,13, "Enter the string: $"
+    mlength db 10,13, "Length is: $"
 
 .code
 

@@ -1,4 +1,4 @@
-print macro m
+ print macro m
 mov ah,09h
 mov dx,offset m
 int 21h
