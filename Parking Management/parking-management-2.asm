@@ -14,16 +14,19 @@
       start10 db ';;                           Mr. Konguvel E.                         ;;$'
       start11 db ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;$'
 
-
-
       menu db  ';;;;;;;;;;;;;;;;;;;;MAIN MENU;;;;;;;;;;;;;;;;;;;;$'
       menu1 db ';; Press 1 for Two-Wheelers                    ;;$'                      
       menu2 db ';; Press 2 for Four-Wheelers                   ;;$'
       menu3 db ';; Press 3 for Space Availability              ;;$'
-      menu4 db ';; Press 4 to Show Record                      ;;$'
-      menu5 db ';; Press 5 to Delete Record                    ;;$'
-      menu6 db ';; Press 6 to Exit                             ;;$'
-      menu7 db ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;$'
+      menu4 db ';; Press 4 to Access Admin                     ;;$'
+      menu5 db ';; Press 5 to Exit                             ;;$'
+      menu6 db ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;$'
+
+      admin_menu db  ';;;;;;;;;;;;;;;;;;;ADMIN MENU;;;;;;;;;;;;;;;;;;;;$'
+      admin_menu1 db ';; Press 1 to Show Records                     ;;$'
+      admin_menu2 db ';; Press 2 to Delete Records                   ;;$'
+      admin_menu3 db ';; Press 3 to Go Back                          ;;$'
+      admin_menu4 db ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;$'
 
       two_menu db  ';;;;;;;;;;;;;;;;;TWO-WHEELER MENU;;;;;;;;;;;;;;;;$'
       two_menu1 db ';; Press 1 for Pricing                         ;;$'                      
@@ -62,17 +65,25 @@
       count dw '0'
       count1 dw '0'
 
+      sure db 'Are you sure? (Y/N)$'
+
+      password db 'password'
+      len equ ($-password)
+      msgg1 db 10,13,'Please enter the password: $'
+      msgg3 db 10,13,'Incorrect Password!$'
+      new db 10,13,'$'
+      inst db 10 dup(0)
+
       two_avail_msg db 'The number of spaces left for Two-Wheelers are: $'
       four_avail_msg db 'The number of spaces left for Four-Wheelers are: $'
       total_avail_msg db 'The number of spaces left are: $'
       
       r_left dw '4'
       c_left dw '4'
+      t_left dw '8'
       
       r dw '0'
-      c db '0'
-
-      
+      c db '0' 
   .code
   ;****************MAIN PROGRAM****************
   main proc
@@ -107,16 +118,14 @@
         ;now compare
       mov al,bl
       cmp al,'1'
-      je two_wheeler
+      je two_wheelerr
       cmp al,'2'
-      je four_wheeler
+      je four_wheelerr
       cmp al,'3'
       je avail_total
       cmp al,'4'
-      je rec
+      je adminn
       cmp al,'5'
-      je del
-      cmp al,'6'
       je end_
       
       mov dx,offset wrong_choice
@@ -124,6 +133,12 @@
       call getc
 
       jmp while_
+
+      two_wheelerr:
+      call two_wheeler
+
+      four_wheelerr:
+      call four_wheeler
       
       avail_total:
       call clr
@@ -131,17 +146,24 @@
       call back
 
 
-      rec:
+      adminn:
       call clr
-      call recrd
-      call back
-      
-      del:
-      call clr
-      call delt
+      call admin_pass
       call back
       
       end_:
+      call clr
+      mov dx,offset sure
+      call puts
+
+      call user_choice
+      mov al,bl
+      cmp al,'y'
+      je exit
+
+      jmp while_
+
+      exit:
       mov ah,4ch
       int 21h
 
@@ -149,6 +171,99 @@
 
   ;*******************END OF MAIN_MENU*************************
       
+      ;**********admin_pass************
+      admin_pass proc
+      start_pass:
+
+        lea dx,msgg1
+        mov ah,09h
+        int 21h
+        mov si,00
+    up1:
+        mov ah,08h
+        int 21h
+        cmp al,0dh
+        je down
+        mov [inst+si],al
+        mov dl,'*'
+        mov ah,02h
+        int 21h
+        inc si
+        jmp up1
+    down:
+        mov bx,00
+        mov cx,len
+    check:
+        mov al,[inst+bx]
+        mov dl,[password+bx]
+        cmp al,dl                                    
+        jne fail
+        inc bx
+        loop check
+        jmp success
+    
+
+    success:
+        call clr
+        call admin
+        ret
+    fail:
+        lea dx,msgg3
+        mov ah,009h
+        int 21h
+        call endl
+        ret
+      admin_pass endp
+
+      ;**********admin***********
+      admin proc
+      call put_admin_menu
+      call user_choice
+
+      mov al,bl
+      cmp al,'1'
+      je show_recordss
+      cmp al,'2'
+      je delete_recordss
+      cmp al,'3'
+      call main_menu
+
+      show_recordss:
+      call clr
+      call recrd
+      call back_admin
+
+      delete_recordss:
+      call clr
+      call delt
+      call back_admin
+
+      ret
+      admin endp
+
+      ;***********put_admin_menu**********
+      put_admin_menu proc
+      call clr
+       mov dx,offset admin_menu
+      call puts
+
+      mov dx,offset admin_menu1
+      call puts
+
+      mov dx,offset admin_menu2
+      call puts
+
+      mov dx,offset admin_menu3
+      call puts
+
+      mov dx,offset admin_menu4
+      call puts
+
+      mov dx,offset choice
+      call puts
+
+      ret
+      put_admin_menu endp
 
       ;*********Two Wheeler************
       two_wheeler proc 
@@ -167,10 +282,6 @@
       je purchase_two_ticket
       cmp al,'4'
       call main_menu
-      cmp al,'5'
-      je del
-      cmp al,'6'
-      je end_
 
       show_two_price:
       call put_two_price
@@ -203,10 +314,6 @@
       je purchase_four_ticket
       cmp al,'4'
       call main_menu
-      cmp al,'5'
-      je del
-      cmp al,'6'
-      je end_
 
       show_four_price:
       call put_four_price
@@ -227,10 +334,7 @@
       call puts
 
       ;sum of cars + bikes
-      mov ax,r_left
-      mov bx,c_left
-      add ax,bx
-      mov dx,ax
+      mov dx, t_left
       mov ah,2
       int 21h
 
@@ -331,6 +435,20 @@
       call two_wheeler
       
       two1:
+
+      call clr
+      mov dx,offset sure
+      call puts
+
+      call user_choice
+      mov al,bl
+      cmp al,'y'
+      je two_sure
+
+      call back
+
+      two_sure:
+      call endl
       mov ax,200
       add amount, ax
       mov dx,0 ; remainder is 0
@@ -358,6 +476,7 @@
       inc count
       inc r
       dec r_left
+      dec t_left
 
       call endl
       
@@ -381,8 +500,23 @@
       call getc
 
       call four_wheeler
-      
+
       four1:
+
+      call clr
+      mov dx,offset sure
+      call puts
+
+      call user_choice
+      mov al,bl
+      cmp al,'y'
+      je four_sure
+
+      call back
+
+      four_sure:
+      call endl
+      
       mov ax,400
       add amount, ax
       mov dx,0 ; remainder is 0
@@ -410,6 +544,7 @@
       inc count
       inc c
       dec c_left
+      dec t_left
 
       call endl
       
@@ -555,16 +690,7 @@
       
       call endl 
       call endl
-      
-      
-;       mov dx,offset msg11
-;       mov ah,9
-;       int 21h
-      
-;       mov dl,b
-;       mov ah,2
-;       int 21h
-      
+
       ret
 
       recrd endp
@@ -573,6 +699,19 @@
       
       ;********DELETE RECORDS***********
       delt proc
+      call clr
+      mov dx,offset sure
+      call puts
+
+      call user_choice
+      mov al,bl
+      cmp al,'y'
+      je conf
+
+      call back_admin
+
+      conf:
+      call endl
       mov r,'0'
       mov c,'0'
       mov r_left,'4'
@@ -591,7 +730,6 @@
       mov dx,13
       mov ah,2
       int 21h
-      
       ret
 
       delt endp
@@ -631,6 +769,14 @@
       jmp while_
       ret
       back endp
+
+      back_admin proc
+      mov dx,offset goback
+      call puts
+      call getc
+      call admin
+      ret
+      back_admin endp
 
       ;*****USER_CHOICE******
       user_choice proc
@@ -722,9 +868,6 @@
       call puts
       
       mov dx,offset menu6
-      call puts
-
-      mov dx,offset menu7
       call puts
 
       mov dx,offset choice
